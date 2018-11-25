@@ -14,7 +14,7 @@ fn main() -> io::Result<()> {
         let line = line.trim();
 
         if set.insert(line) {
-            write!(out, "{}", line)?;
+            writeln!(out, "{}", line)?;
         }
     }
 
