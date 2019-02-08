@@ -11,8 +11,6 @@ fn main() -> io::Result<()> {
     io::stdin().read_to_string(&mut buf)?;
 
     for line in buf.lines() {
-        let line = line.trim();
-
         if set.insert(line) {
             writeln!(out, "{}", line)?;
         }
