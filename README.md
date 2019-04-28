@@ -2,6 +2,14 @@
 
 > A `unique(1)` pipeline filter
 
+## Installation
+
+Because I don't want to change the name to something lame, this package is not published on crates.io. To install, run the following command.
+
+```
+cargo install --git https://github.com/archer884/unique
+```
+
 In all likelihood, your computer already has a command that does this, and the odds are you can *probably* get by with either of them. Read on to discover if `unique` can be useful to you.
 
 ## Windows
