@@ -8,7 +8,7 @@ use structopt::StructOpt;
 /// elements of the stream.
 #[derive(Clone, Debug, StructOpt)]
 struct Opt {
-    /// Causes unique to print only non-unique elements.
+    /// Causes unique to print only non-unique elements. Elements print only once.
     #[structopt(short = "i", long = "invert")]
     invert: bool,
 }
