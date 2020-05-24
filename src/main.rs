@@ -29,7 +29,7 @@ fn filter<'a>(text: impl IntoIterator<Item = &'a str>, mut out: impl Write) -> i
     let mut set = HashSet::new();
     text.into_iter()
         .filter(|&x| set.insert(x))
-        .try_for_each(|x| out.write_all(x.as_bytes()))
+        .try_for_each(|x| writeln!(out, "{}", x))
 }
 
 fn inverted_filter<'a>(
@@ -39,7 +39,7 @@ fn inverted_filter<'a>(
     let mut set = HashSet::new();
     text.into_iter()
         .filter(|&x| !set.insert(x))
-        .try_for_each(|x| out.write_all(x.as_bytes()))
+        .try_for_each(|x| writeln!(out, "{}", x))
 }
 
 fn input(buf: &mut String) -> io::Result<impl Iterator<Item = &str>> {
