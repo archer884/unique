@@ -1,8 +1,8 @@
-use hashbrown::{HashMap, HashSet};
+use hashbrown::HashSet;
 use std::io::{self, Read, Write};
 use structopt::StructOpt;
 
-/// A line-by-line text stream filter.
+/// A line-by-line text stream filter
 ///
 /// By default, unique reads an entire text stream at once, line by line, printing only unique
 /// elements of the stream.
@@ -27,31 +27,19 @@ fn main() -> io::Result<()> {
 
 fn filter<'a>(text: impl IntoIterator<Item = &'a str>, mut out: impl Write) -> io::Result<()> {
     let mut set = HashSet::new();
-
-    for line in text {
-        if set.insert(line) {
-            writeln!(out, "{}", line)?;
-        }
-    }
-
-    Ok(())
+    text.into_iter()
+        .filter(|&x| set.insert(x))
+        .try_for_each(|x| out.write_all(x.as_bytes()))
 }
 
 fn inverted_filter<'a>(
     text: impl IntoIterator<Item = &'a str>,
     mut out: impl Write,
 ) -> io::Result<()> {
-    let mut map = HashMap::new();
-
-    for line in text {
-        let count = map.entry(line).or_insert(0usize);
-        *count += 1;
-        if *count == 2 {
-            writeln!(out, "{}", line)?;
-        }
-    }
-
-    Ok(())
+    let mut set = HashSet::new();
+    text.into_iter()
+        .filter(|&x| !set.insert(x))
+        .try_for_each(|x| out.write_all(x.as_bytes()))
 }
 
 fn input(buf: &mut String) -> io::Result<impl Iterator<Item = &str>> {
