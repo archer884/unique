@@ -1,20 +1,22 @@
-use hashbrown::HashSet;
 use std::io::{self, Read, Write};
-use structopt::StructOpt;
+
+use clap::{Clap, crate_authors, crate_description, crate_version};
+use hashbrown::HashSet;
 
 /// A line-by-line text stream filter
 ///
 /// By default, unique reads an entire text stream at once, line by line, printing only unique
 /// elements of the stream.
-#[derive(Clone, Debug, StructOpt)]
+#[derive(Clap, Clone, Debug)]
+#[clap(author = crate_authors!(), about = crate_description!(), version = crate_version!())]
 struct Opt {
     /// Causes unique to print only non-unique elements. Elements print only once.
-    #[structopt(short = "i", long = "invert")]
+    #[clap(short = 'i', long = "invert")]
     invert: bool,
 }
 
 fn main() -> io::Result<()> {
-    let options = Opt::from_args();
+    let options = Opt::parse();
     let mut buf = String::new();
 
     let handle = io::stdout();

@@ -5,5 +5,5 @@ authors = ["J/A <archer884@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-hashbrown = "0.3"
-structopt = "0.2"
+clap = { git = "https://github.com/clap-rs/clap.git" }
+hashbrown = "0.9.1"
