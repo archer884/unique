@@ -1,29 +1,38 @@
-use std::io::{self, Read, Write};
+use std::{
+    io::{self, Read, Write},
+    process,
+};
 
-use clap::{Clap, crate_authors, crate_description, crate_version};
+use clap::Parser;
 use hashbrown::HashSet;
 
 /// A line-by-line text stream filter
 ///
 /// By default, unique reads an entire text stream at once, line by line, printing only unique
 /// elements of the stream.
-#[derive(Clap, Clone, Debug)]
-#[clap(author = crate_authors!(), about = crate_description!(), version = crate_version!())]
-struct Opt {
-    /// Causes unique to print only non-unique elements. Elements print only once.
-    #[clap(short = 'i', long = "invert")]
+#[derive(Clone, Debug, Parser)]
+#[clap(author, version)]
+struct Args {
+    /// print only non-unique elements
+    ///
+    /// Only REPEAT elements will be printed. Each element will be printed ONLY ONCE.
+    #[clap(short, long)]
     invert: bool,
 }
 
-fn main() -> io::Result<()> {
-    let options = Opt::parse();
-    let mut buf = String::new();
+fn main() {
+    if let Err(e) = run(&Args::parse()) {
+        eprintln!("{e}");
+        process::exit(1);
+    }
+}
 
-    let handle = io::stdout();
-    if options.invert {
-        inverted_filter(input(&mut buf)?, handle.lock())
+fn run(args: &Args) -> io::Result<()> {
+    let mut buf = String::new();
+    if args.invert {
+        inverted_filter(input(&mut buf)?, io::stdout().lock())
     } else {
-        filter(input(&mut buf)?, handle.lock())
+        filter(input(&mut buf)?, io::stdout().lock())
     }
 }
 
