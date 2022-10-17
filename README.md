@@ -47,7 +47,3 @@ cat foo.txt | unique
 ```
 
 *You will save five entire characters.* Your children will thank you.
-
-### Inverted mode
-
-`unique` also offers a brand new `--invert` mode, which causes the filter to print *only repeated items* instead. What are you gonna do with that? I dunno, go wild.
