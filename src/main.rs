@@ -37,6 +37,12 @@ struct Args {
     /// Prints only repeated elements.
     #[arg(short, long)]
     invert: bool,
+
+    /// allow blanks
+    ///
+    /// Ignores blank lines
+    #[arg(short = 'b', long)]
+    allow_blanks: bool,
 }
 
 impl Args {
@@ -48,35 +54,68 @@ impl Args {
     }
 }
 
-trait Predicate<T> {
-    fn filter(&mut self, value: T) -> bool;
+trait Predicate<T: Testable> {
+    fn filter(&mut self, s: T) -> bool;
 }
 
-#[derive(Debug, Default)]
+trait Testable: Hash + Eq {
+    fn non_interesting(&self) -> bool;
+}
+
+impl<T> Testable for T
+where
+    T: Eq + Hash + AsRef<str>,
+{
+    fn non_interesting(&self) -> bool {
+        self.as_ref().trim() == ""
+    }
+}
+
+#[derive(Debug)]
 struct UniquePredicate<T> {
     set: HashSet<T>,
+    allow_non_interesting: bool,
 }
 
-impl<T: Eq + Hash> Predicate<T> for UniquePredicate<T> {
-    #[inline]
-    fn filter(&mut self, value: T) -> bool {
-        self.set.insert(value)
+impl<T> UniquePredicate<T> {
+    fn new(allow_non_interesting: bool) -> Self {
+        Self {
+            set: Default::default(),
+            allow_non_interesting,
+        }
     }
 }
 
-#[derive(Debug, Default)]
+impl<T: Testable> Predicate<T> for UniquePredicate<T> {
+    #[inline]
+    fn filter(&mut self, value: T) -> bool {
+        self.allow_non_interesting && value.non_interesting() || self.set.insert(value)
+    }
+}
+
+#[derive(Debug)]
 struct NonUniquePredicate<T> {
     set: HashSet<T>,
+    allow_non_interesting: bool,
 }
 
-impl<T: Eq + Hash> Predicate<T> for NonUniquePredicate<T> {
-    #[inline]
-    fn filter(&mut self, value: T) -> bool {
-        self.set.insert(value)
+impl<T: Testable> NonUniquePredicate<T> {
+    fn new(allow_non_interesting: bool) -> Self {
+        NonUniquePredicate {
+            set: Default::default(),
+            allow_non_interesting,
+        }
     }
 }
 
-impl<T: Eq + Hash> Predicate<T> for Either<UniquePredicate<T>, NonUniquePredicate<T>> {
+impl<T: Testable> Predicate<T> for NonUniquePredicate<T> {
+    #[inline]
+    fn filter(&mut self, value: T) -> bool {
+        self.allow_non_interesting && value.non_interesting() || !self.set.insert(value)
+    }
+}
+
+impl<T: Testable> Predicate<T> for Either<UniquePredicate<T>, NonUniquePredicate<T>> {
     fn filter(&mut self, value: T) -> bool {
         match self.as_mut() {
             Either::Left(p) => p.filter(value),
@@ -95,7 +134,7 @@ fn main() {
 fn run(args: &Args) -> io::Result<()> {
     let text = read_text(args)?;
 
-    let mut predicate = initialize_predicate(args.invert);
+    let mut predicate = initialize_predicate(args.invert, args.allow_blanks);
     let mut text: Vec<_> = text.lines().filter(|&s| predicate.filter(s)).collect();
 
     if args.sort {
@@ -141,12 +180,10 @@ fn read_text(args: &Args) -> io::Result<String> {
     }
 }
 
-fn initialize_predicate<'a>(
-    invert: bool,
-) -> Either<UniquePredicate<&'a str>, NonUniquePredicate<&'a str>> {
+fn initialize_predicate<T: Testable>(invert: bool, allow_blanks: bool) -> impl Predicate<T> {
     if invert {
-        Either::Right(NonUniquePredicate::default())
+        Either::Right(NonUniquePredicate::new(allow_blanks))
     } else {
-        Either::Left(UniquePredicate::default())
+        Either::Left(UniquePredicate::new(allow_blanks))
     }
 }
