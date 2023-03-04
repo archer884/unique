@@ -62,12 +62,9 @@ trait Testable: Hash + Eq {
     fn non_interesting(&self) -> bool;
 }
 
-impl<T> Testable for T
-where
-    T: Eq + Hash + AsRef<str>,
-{
+impl Testable for &str {
     fn non_interesting(&self) -> bool {
-        self.as_ref().trim() == ""
+        self.trim() == ""
     }
 }
 
