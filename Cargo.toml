@@ -15,7 +15,6 @@ panic = "abort"
 debug = 0
 
 [dependencies]
-atty = "0.2.14"
 clap = { version = "4.5.7", features = ["derive", "wrap_help"] }
 either = "1.12.0"
 hashbrown = "0.13.2"
